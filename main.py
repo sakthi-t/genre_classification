@@ -49,7 +49,7 @@ def go(config: DictConfig):
             },
         )
 
-    if "check_data" in steps_to_execute:
+    if "check_data" in steps_to_execute: # Tests are happening
         _ = mlflow.run(
             os.path.join(root_path, "check_data"),
             "main",
@@ -67,7 +67,7 @@ def go(config: DictConfig):
             "main",
             parameters={
                 "input_artifact": "preprocessed_data.csv:latest",
-                "artifact_root": "data",
+                "artifact_root": "data", # train and test csv
                 "artifact_type": "segregated_data",
                 "test_size": config["data"]["test_size"],
                 "stratify": config["data"]["stratify"]

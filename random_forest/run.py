@@ -13,7 +13,7 @@ from mlflow.models import infer_signature
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import roc_auc_score, plot_confusion_matrix
+from sklearn.metrics import roc_auc_score, ConfusionMatrixDisplay, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler, FunctionTransformer
 import matplotlib.pyplot as plt
@@ -72,14 +72,20 @@ def go(args):
     fig_feat_imp = plot_feature_importance(pipe)
 
     fig_cm, sub_cm = plt.subplots(figsize=(10, 10))
-    plot_confusion_matrix(
-        pipe,
-        X_val[used_columns],
-        y_val,
-        ax=sub_cm,
-        normalize="true",
-        values_format=".1f",
-        xticks_rotation=90,
+    # plot_confusion_matrix(
+    #    pipe,
+    #    X_val[used_columns],
+    #    y_val,
+    #    ax=sub_cm,
+    #    normalize="true",
+    #    values_format=".1f",
+    #    xticks_rotation=90,
+    # )
+    # Create the confusion matrix
+    cm = confusion_matrix(y_val, pipe.predict(X_val), labels=pipe.classes_)
+    ConfusionMatrixDisplay(
+        confusion_matrix=cm,
+        display_labels=pipe.classes_,
     )
     fig_cm.tight_layout()
 
@@ -96,7 +102,9 @@ def export_model(run, pipe, used_columns, X_val, val_pred, export_artifact):
     # Infer the signature of the model
 
     # Get the columns that we are really using from the pipeline
-    signature = infer_signature(X_val[used_columns], val_pred)
+    input_example = X_val.iloc[:1]
+    # signature = infer_signature(X_val[used_columns], val_pred) # refer ex 13
+    signature = infer_signature(input_example[used_columns], val_pred)
 
     with tempfile.TemporaryDirectory() as temp_dir:
 
